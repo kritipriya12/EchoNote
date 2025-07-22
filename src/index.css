@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom font from Google Fonts (Poppins) is already loaded in index.html */
+body {
+  font-family: 'Poppins', sans-serif;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z'/%3E%3Cpath d='m15 5 4 4'/%3E%3C/svg%3E") 2 22, auto;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+/* Custom color definitions */
+:root {
+  --coral-400: #ff7875;
+  --coral-500: #ff6b68;
+}
+
+/* Custom Tailwind utilities */
+
+/* React Calendar Customization */
+.react-calendar {
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.react-calendar__tile {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 8px !important;
+  margin: 2px !important;
+  padding: 8px !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-calendar__tile:hover {
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+}
+
+.react-calendar__tile--active {
+  background: linear-gradient(135deg, #a855f7, #ec4899) !important;
+  color: white !important;
+}
+
+.react-calendar__tile--now {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.react-calendar__navigation button {
+  background: transparent !important;
+  border: none !important;
+  color: #6b7280 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 8px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-calendar__navigation button:hover {
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+}
+
+/* React Quill Customization */
+.ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background: #f9fafb !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.ql-container {
+  border: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 16px !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+.ql-editor {
+  min-height: 300px !important;
+  padding: 24px !important;
+  line-height: 1.6 !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #9ca3af !important;
+  font-style: italic !important;
+}
+
+/* Line clamp utility */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bg-coral-400 {
+  background-color: var(--coral-400);
+}
+
+.bg-coral-500 {
+  background-color: var(--coral-500);
+}
+
+.to-coral-400 {
+  --tw-gradient-to: var(--coral-400);
+}
+
+.to-coral-500 {
+  --tw-gradient-to: var(--coral-500);
+}
+
+.from-coral-400 {
+  --tw-gradient-from: var(--coral-400);
+  --tw-gradient-to: rgb(255 120 117 / 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-coral-500 {
+  --tw-gradient-from: var(--coral-500);
+  --tw-gradient-to: rgb(255 107 104 / 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.hover\:from-coral-500:hover {
+  --tw-gradient-from: var(--coral-500);
+  --tw-gradient-to: rgb(255 107 104 / 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.hover\:to-coral-500:hover {
+  --tw-gradient-to: var(--coral-500);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Navigation backdrop blur enhancement */
+nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Enhanced backdrop blur support */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Custom shadows for depth */
+.shadow-dreamy {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Text gradient utilities */
+.text-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states */
+button:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Custom card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
