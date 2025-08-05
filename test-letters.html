@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; margin-right: 10px; margin-bottom: 10px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        .error { background: #ffe6e6; border-color: #ff9999; }
+        .success { background: #e6ffe6; border-color: #99ff99; }
+        .letter-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .letter-title { font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+        .letter-meta { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .letter-content { margin-bottom: 10px; }
+        .letter-tags { margin-bottom: 10px; }
+        .tag { background: #e7e3ff; color: #5b21b6; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h1>EchoNote Letter API Test</h1>
+    
+    <div class="form-group">
+        <label>API Base URL:</label>
+        <input type="text" id="apiUrl" value="http://localhost:8080/api/v1" />
+    </div>
+    
+    <h2>Authentication</h2>
+    <div class="form-group">
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="your@email.com" />
+    </div>
+    
+    <div class="form-group">
+        <label>Password:</label>
+        <input type="password" id="password" placeholder="Password" />
+    </div>
+    
+    <button onclick="signIn()">Sign In</button>
+    <button onclick="signOut()">Sign Out</button>
+    
+    <h2>Letter Management</h2>
+    <div class="form-group">
+        <label>Letter Title:</label>
+        <input type="text" id="letterTitle" placeholder="My Letter Title" />
+    </div>
+    
+    <div class="form-group">
+        <label>Letter Content:</label>
+        <textarea id="letterContent" rows="5" placeholder="Dear Future Me..."></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label>Delivery Date:</label>
+        <input type="datetime-local" id="deliveryDate" />
+    </div>
+    
+    <div class="form-group">
+        <label>Reminders:</label>
+        <select id="reminders">
+            <option value="1">1 reminder</option>
+            <option value="2">2 reminders</option>
+            <option value="3">3 reminders</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label>Tags (comma-separated):</label>
+        <input type="text" id="tags" placeholder="Hope, Goals, Dreams" />
+    </div>
+    
+    <button onclick="createLetter()">Create Letter</button>
+    <button onclick="getLetters()">Get My Letters</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+    
+    <div id="letters-container"></div>
+
+    <script>
+        // Set default delivery date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('deliveryDate').value = tomorrow.toISOString().slice(0, 16);
+
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = isError ? 'result error' : 'result success';
+            resultDiv.style.display = 'block';
+        }
+
+        async function makeRequest(endpoint, options = {}) {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const url = `${apiUrl}${endpoint}`;
+            
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                ...options,
+            };
+
+            try {
+                const response = await fetch(url, defaultOptions);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        async function signIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showResult('Please fill in email and password', true);
+                return;
+            }
+            
+            try {
+                const result = await makeRequest('/auth/signin', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        data: { email, password }
+                    }),
+                });
+                showResult(`Sign in successful: ${result.message}`);
+            } catch (error) {
+                showResult(`Sign in failed: ${error.message}`, true);
+            }
+        }
+
+        async function signOut() {
+            try {
+                const result = await makeRequest('/auth/signout', {
+                    method: 'POST',
+                });
+                showResult(`Sign out successful: ${result.message}`);
+                document.getElementById('letters-container').innerHTML = '';
+            } catch (error) {
+                showResult(`Sign out failed: ${error.message}`, true);
+            }
+        }
+
+        async function createLetter() {
+            const title = document.getElementById('letterTitle').value;
+            const content = document.getElementById('letterContent').value;
+            const deliveryDate = document.getElementById('deliveryDate').value;
+            const reminders = parseInt(document.getElementById('reminders').value);
+            const tagsInput = document.getElementById('tags').value;
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()) : [];
+            
+            if (!title || !content || !deliveryDate) {
+                showResult('Please fill in title, content, and delivery date', true);
+                return;
+            }
+            
+            try {
+                const result = await makeRequest('/letters', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        data: {
+                            title,
+                            content,
+                            deliveryDate: new Date(deliveryDate).toISOString(),
+                            reminders,
+                            tags
+                        }
+                    }),
+                });
+                showResult(`Letter created successfully: ${result.message}`);
+                
+                // Clear form
+                document.getElementById('letterTitle').value = '';
+                document.getElementById('letterContent').value = '';
+                document.getElementById('tags').value = '';
+                
+                // Refresh letters
+                getLetters();
+            } catch (error) {
+                showResult(`Create letter failed: ${error.message}`, true);
+            }
+        }
+
+        async function getLetters() {
+            try {
+                const result = await makeRequest('/letters');
+                showResult(`Found ${result.letters.length} letters`);
+                displayLetters(result.letters);
+            } catch (error) {
+                showResult(`Get letters failed: ${error.message}`, true);
+            }
+        }
+
+        function displayLetters(letters) {
+            const container = document.getElementById('letters-container');
+            
+            if (letters.length === 0) {
+                container.innerHTML = '<p>No letters found. Create your first letter!</p>';
+                return;
+            }
+            
+            container.innerHTML = '<h2>Your Letters</h2>' + letters.map(letter => `
+                <div class="letter-card">
+                    <div class="letter-title">${letter.title}</div>
+                    <div class="letter-meta">
+                        Status: ${letter.status} | 
+                        Delivers: ${new Date(letter.deliveryDate).toLocaleDateString()} | 
+                        Created: ${new Date(letter.createdAt).toLocaleDateString()}
+                    </div>
+                    <div class="letter-content">${letter.content.substring(0, 200)}${letter.content.length > 200 ? '...' : ''}</div>
+                    <div class="letter-tags">
+                        ${letter.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="letter-meta">
+                        ${letter.reminders} reminders | 
+                        ${letter.hasImage ? 'Has image' : 'No image'} | 
+                        ${letter.hasVoice ? 'Has voice' : 'No voice'}
+                    </div>
+                    <button onclick="deleteLetter('${letter.id}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        async function deleteLetter(id) {
+            if (!confirm('Are you sure you want to delete this letter?')) {
+                return;
+            }
+            
+            try {
+                const result = await makeRequest(`/letters/${id}`, {
+                    method: 'DELETE',
+                });
+                showResult(`Letter deleted: ${result.message}`);
+                getLetters(); // Refresh the list
+            } catch (error) {
+                showResult(`Delete failed: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

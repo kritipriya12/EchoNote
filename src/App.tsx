@@ -1,10 +1,39 @@
 import React from 'react';
-import { Calendar, Mail, Heart, Shield, Bell, Edit3, Tag, Archive, ChevronRight, Star, Menu, X } from 'lucide-react';
+import { Calendar, Mail, Heart, Shield, Bell, Edit3, Tag, Archive, ChevronRight, Star, Menu, X, LogOut, User } from 'lucide-react';
 import Dashboard from './components/Dashboard';
+import AuthModal from './components/AuthModal';
+import { AuthProvider, useAuth } from './lib/auth';
 
-function App() {
+function AppContent() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [showDashboard, setShowDashboard] = React.useState(false);
+  const [showAuthModal, setShowAuthModal] = React.useState(false);
+  const [authMode, setAuthMode] = React.useState<'signin' | 'signup'>('signin');
+
+  const { user, isAuthenticated, signOut } = useAuth();
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      setShowDashboard(true);
+    } else {
+      setAuthMode('signup');
+      setShowAuthModal(true);
+    }
+  };
+
+  const handleSignIn = () => {
+    setAuthMode('signin');
+    setShowAuthModal(true);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setShowDashboard(false);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
 
   if (showDashboard) {
     return <Dashboard onClose={() => setShowDashboard(false)} />;
@@ -30,13 +59,41 @@ function App() {
               <a href="#how-it-works" className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium">How It Works</a>
               <a href="#features" className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium">Features</a>
               <a href="#testimonials" className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium">Reviews</a>
-              <button className="bg-purple-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                Get Started
-              </button>
+
+              {isAuthenticated ? (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <User size={16} />
+                    <span>Welcome, {user?.name}</span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleSignIn}
+                    className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={handleGetStarted}
+                    className="bg-purple-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
@@ -52,9 +109,37 @@ function App() {
                 <a href="#how-it-works" className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium py-2">How It Works</a>
                 <a href="#features" className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium py-2">Features</a>
                 <a href="#testimonials" className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium py-2">Reviews</a>
-                <button className="bg-purple-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 mt-4">
-                  Get Started
-                </button>
+
+                {isAuthenticated ? (
+                  <div className="flex flex-col space-y-3 mt-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 py-2">
+                      <User size={16} />
+                      <span>Welcome, {user?.name}</span>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium py-2"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col space-y-3 mt-4">
+                    <button
+                      onClick={handleSignIn}
+                      className="text-sm text-gray-600 hover:text-purple-600 transition-colors font-medium py-2 text-left"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={handleGetStarted}
+                      className="bg-purple-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    >
+                      Get Started
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -73,17 +158,17 @@ function App() {
               Write today. Receive tomorrow.
             </p>
             <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
-              Connect with your future self through heartfelt letters. Set a date, share your dreams, 
+              Connect with your future self through heartfelt letters. Set a date, share your dreams,
               and rediscover your thoughts when the time is right.
             </p>
-            <button 
-             onClick={() => setShowDashboard(true)}
+            <button
+              onClick={handleGetStarted}
               className="bg-purple-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center gap-3">
-              Start Writing
+              {isAuthenticated ? 'Start Writing' : 'Get Started'}
               <Edit3 size={20} />
             </button>
           </div>
-          
+
           {/* Floating Elements */}
           <div className="absolute top-20 left-10 opacity-20 animate-float">
             <Mail size={40} className="text-purple-300" />
@@ -115,7 +200,7 @@ function App() {
               </div>
               <h3 className="text-2xl font-semibold text-gray-800 mb-4">Create a Letter</h3>
               <p className="text-gray-600 leading-relaxed">
-                Pick a future date using our beautiful calendar, write your thoughts, dreams, or goals, 
+                Pick a future date using our beautiful calendar, write your thoughts, dreams, or goals,
                 and save your letter securely in our system.
               </p>
             </div>
@@ -127,7 +212,7 @@ function App() {
               </div>
               <h3 className="text-2xl font-semibold text-gray-800 mb-4">Get Notified</h3>
               <p className="text-gray-600 leading-relaxed">
-                On your selected date, receive a gentle notification via email or push. 
+                On your selected date, receive a gentle notification via email or push.
                 It's time to reconnect with your past thoughts and dreams.
               </p>
             </div>
@@ -139,7 +224,7 @@ function App() {
               </div>
               <h3 className="text-2xl font-semibold text-gray-800 mb-4">View & Reflect</h3>
               <p className="text-gray-600 leading-relaxed">
-                Access your letters in "My Letters" dashboard, tag them with emotions like Hope or Love, 
+                Access your letters in "My Letters" dashboard, tag them with emotions like Hope or Love,
                 and revisit your journey anytime.
               </p>
             </div>
@@ -294,7 +379,7 @@ function App() {
                 ))}
               </div>
               <p className="text-gray-700 italic mb-6">
-                "I opened a letter from my past self and cried. It reminded me of dreams I had forgotten. 
+                "I opened a letter from my past self and cried. It reminded me of dreams I had forgotten.
                 Thank you, EchoNote."
               </p>
               <div className="w-12 h-12 bg-gradient-to-br from-purple-300 to-pink-300 rounded-full mx-auto mb-3"></div>
@@ -308,7 +393,7 @@ function App() {
                 ))}
               </div>
               <p className="text-gray-700 italic mb-6">
-                "A beautiful way to hold onto yourself through time. Every letter feels like a gift 
+                "A beautiful way to hold onto yourself through time. Every letter feels like a gift
                 from the person I used to be."
               </p>
               <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-teal-300 rounded-full mx-auto mb-3"></div>
@@ -322,7 +407,7 @@ function App() {
                 ))}
               </div>
               <p className="text-gray-700 italic mb-6">
-                "This app helped me through tough times. Writing to my future self became my therapy, 
+                "This app helped me through tough times. Writing to my future self became my therapy,
                 and receiving those letters was pure magic."
               </p>
               <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-orange-300 rounded-full mx-auto mb-3"></div>
@@ -339,9 +424,10 @@ function App() {
           <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
             Start your journey of self-reflection and connection today. Your future self is waiting.
           </p>
-          <button 
+          <button
+            onClick={handleGetStarted}
             className="bg-white text-purple-600 hover:bg-gradient-to-r hover:from-purple-400 hover:to-pink-400 hover:text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center gap-3">
-            Start Writing Letters
+            {isAuthenticated ? 'Start Writing Letters' : 'Get Started'}
             <ChevronRight size={20} />
           </button>
         </div>
@@ -354,11 +440,11 @@ function App() {
             <div className="md:col-span-2">
               <h3 className="text-2xl font-bold mb-4">EchoNote</h3>
               <p className="text-gray-400 leading-relaxed max-w-md">
-                Connect with your future self through heartfelt letters. A beautiful way to reflect, 
+                Connect with your future self through heartfelt letters. A beautiful way to reflect,
                 grow, and remember your journey through time.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
@@ -368,7 +454,7 @@ function App() {
                 <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-gray-400">
@@ -379,7 +465,7 @@ function App() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">© 2025 EchoNote. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
@@ -393,7 +479,22 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authMode}
+      />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

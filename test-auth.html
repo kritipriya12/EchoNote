@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; margin-right: 10px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        .error { background: #ffe6e6; border-color: #ff9999; }
+        .success { background: #e6ffe6; border-color: #99ff99; }
+    </style>
+</head>
+<body>
+    <h1>EchoNote Auth API Test</h1>
+    
+    <div class="form-group">
+        <label>API Base URL:</label>
+        <input type="text" id="apiUrl" value="http://localhost:8080/api/v1" />
+    </div>
+    
+    <div class="form-group">
+        <label>Name:</label>
+        <input type="text" id="name" placeholder="Your Name" />
+    </div>
+    
+    <div class="form-group">
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="your@email.com" />
+    </div>
+    
+    <div class="form-group">
+        <label>Password:</label>
+        <input type="password" id="password" placeholder="Password (min 6 chars)" />
+    </div>
+    
+    <button onclick="testSignUp()">Test Sign Up</button>
+    <button onclick="testSignIn()">Test Sign In</button>
+    <button onclick="testSignOut()">Test Sign Out</button>
+    <button onclick="testGetUser()">Test Get User</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = isError ? 'result error' : 'result success';
+            resultDiv.style.display = 'block';
+        }
+
+        async function makeRequest(endpoint, options = {}) {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const url = `${apiUrl}${endpoint}`;
+            
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                ...options,
+            };
+
+            try {
+                const response = await fetch(url, defaultOptions);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        async function testSignUp() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!name || !email || !password) {
+                showResult('Please fill in all fields', true);
+                return;
+            }
+            
+            try {
+                const result = await makeRequest('/auth/signup', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        data: { name, email, password }
+                    }),
+                });
+                showResult(`Sign up successful: ${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                showResult(`Sign up failed: ${error.message}`, true);
+            }
+        }
+
+        async function testSignIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showResult('Please fill in email and password', true);
+                return;
+            }
+            
+            try {
+                const result = await makeRequest('/auth/signin', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        data: { email, password }
+                    }),
+                });
+                showResult(`Sign in successful: ${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                showResult(`Sign in failed: ${error.message}`, true);
+            }
+        }
+
+        async function testSignOut() {
+            try {
+                const result = await makeRequest('/auth/signout', {
+                    method: 'POST',
+                });
+                showResult(`Sign out successful: ${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                showResult(`Sign out failed: ${error.message}`, true);
+            }
+        }
+
+        async function testGetUser() {
+            try {
+                const result = await makeRequest('/auth/me', {
+                    method: 'GET',
+                });
+                showResult(`Get user successful: ${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                showResult(`Get user failed: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
